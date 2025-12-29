@@ -1,2 +1,39 @@
-data/*
+# --- Python Cache & Bytecode ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Python Environments ---
 .venv/
+venv/
+env/
+ENV/
+lib/
+bin/
+include/
+
+# --- LaTeX Build Files ---
+*.aux
+*.log
+*.toc
+*.out
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.bbl
+*.blg
+*.thm
+*.nav
+*.snm
+*.vrb
+*.pdf
+
+# --- macOS System Files ---
+.DS_Store
+
+# --- Data Folder ---
+data/*

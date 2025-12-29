@@ -46,6 +46,16 @@ uv sync
 uv run main.py
 ```
 
+## 4. 命令行参数
+选择训练的模型，设置处理后数据的文件名
+```Bash
+uv run main.py --model_name <model_name> --file_name <file_name>
+```
+
+```Bash
+uv run main.py --help
+```
+
 
 ## 添加新依赖
 ```Bash

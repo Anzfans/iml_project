@@ -2,9 +2,9 @@ import pandas as pd
 import joblib
 import os
 
-def pridict_and_save(model_name, test_data):
+def predict_and_save(model_name, test_data, file_name):
     # 1. 加载保存的 Pipeline 模型
-    model_path = f'results/{model_name}.pkl'
+    model_path = f'results/{model_name+'_'+file_name}.pkl'
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"模型文件未找到: {model_path}")
     
@@ -27,7 +27,7 @@ def pridict_and_save(model_name, test_data):
     })
 
     # 5. 保存预测结果到 CSV 文件
-    submission_path = f'results/{model_name}_submission.csv'
+    submission_path = f'results/{model_name+'_'+file_name}_submission.csv'
     submission_df.to_csv(submission_path, index=False)
     print(f"预测结果已保存至: {submission_path}")    
     

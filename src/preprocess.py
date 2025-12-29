@@ -36,7 +36,7 @@ def preprocess_pdays(df):
 
 
 # 综合预处理函数, 把处理后的数据保存为新的 CSV 文件在
-def basic_preprocess(df):
+def basic_preprocess(df, save_path):
     df = df.copy()
     
     # 1. 目标变量转换
@@ -45,7 +45,7 @@ def basic_preprocess(df):
         df.drop('subscribe', axis=1, inplace=True)
     
     # 2. pdays 特征工程 (你之前的逻辑)
-    df = preprocess_pdays(df)
+    #df = preprocess_pdays(df)
     
     # 3. 选取分类变量进行 One-Hot (包括 pdays_cat, job, loan 等)
     # drop_first=True 对逻辑回归至关重要
@@ -59,7 +59,7 @@ def basic_preprocess(df):
     if 'id' in df.columns:
         df.drop('id', axis=1, inplace=True)
         
-    df.to_csv('data\\processed\\preprocessed_data.csv', index=False)
+    df.to_csv(save_path, index=False)
 
     return df
 

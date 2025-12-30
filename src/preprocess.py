@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+_GLOBAL_MAPPING = None
 
 def preprocess_pdays(df):
     """
@@ -36,7 +37,7 @@ def preprocess_pdays(df):
 
 
 # 综合预处理函数, 把处理后的数据保存为新的 CSV 文件在
-def basic_preprocess(df, save_path):
+def basic_preprocess(df):
     df = df.copy()
     
     # 1. 目标变量转换
@@ -45,26 +46,56 @@ def basic_preprocess(df, save_path):
         df.drop('subscribe', axis=1, inplace=True)
     
     # 2. pdays 特征工程 (你之前的逻辑)
-    #df = preprocess_pdays(df)
+    df = preprocess_pdays(df)
     
-    # 3. 选取分类变量进行 One-Hot (包括 pdays_cat, job, loan 等)
-    # drop_first=True 对逻辑回归至关重要
-    
-    df = pd.get_dummies(df, drop_first=True)
-    
-    # 4. 数值变量处理 (Duration 取对数)
-    df['duration'] = np.log1p(df['duration'])
     
     # 移除 ID 等无关列
     if 'id' in df.columns:
         df.drop('id', axis=1, inplace=True)
-        
-    df.to_csv(save_path, index=False)
 
     return df
 
+def Lg_preprocess(df,):
+    df = pd.get_dummies(df, drop_first=True)
+    df['duration'] = np.log1p(df['duration'])
+    return df
+
+def XG_preprocess(df, mapping=None):
+    df['duration'] = np.log1p(df['duration'])
+
+    if mapping is not None:
+        target_cols = [c for c in mapping.keys() if c != '_global_mean']
+        for col in target_cols:
+            df[col] = df[col].map(mapping[col])
+            df[col].fillna(mapping['_global_mean'])
+
+    for col in df.select_dtypes('object'):
+        df[col] = pd.factorize(df[col])[0]
+    return df
+
+def preprocess_for_model(df, model_name, mapping=None):
+    if model_name == 'logistic_baseline':
+        return Lg_preprocess(df)
+    elif model_name == 'XG':
+        return XG_preprocess(df, mapping)
+    else:
+        raise ValueError(f"Unknown model name: {model_name}")
 
 
+def get_target_mapping(train_df, cols):
+    """从训练集中学习平滑后的目标映射"""
+    mapping = {}
+    global_mean = train_df['target'].mean()
+    m = 50  # 平滑系数
+    
+    for col in cols:
+        stats = train_df.groupby(col)['target'].agg(['count', 'mean'])
+        # 平滑公式
+        smooth = (stats['count'] * stats['mean'] + m * global_mean) / (stats['count'] + m)
+        mapping[col] = smooth.to_dict()
+        
+    mapping['_global_mean'] = global_mean
+    return mapping
 
 # 使用示例:
 # train_df = pd.read_csv('train.csv')

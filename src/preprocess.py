@@ -48,7 +48,7 @@ def basic_preprocess(df):
     # 2. pdays 特征工程 (你之前的逻辑)
     df = preprocess_pdays(df)
     
-    
+    df['duration'] = np.log1p(df['duration'])
     # 移除 ID 等无关列
     if 'id' in df.columns:
         df.drop('id', axis=1, inplace=True)
@@ -56,12 +56,10 @@ def basic_preprocess(df):
     return df
 
 def Lg_preprocess(df,):
-    df = pd.get_dummies(df, drop_first=True)
     df['duration'] = np.log1p(df['duration'])
     return df
 
 def XG_preprocess(df, mapping=None):
-    df['duration'] = np.log1p(df['duration'])
 
     if mapping is not None:
         target_cols = [c for c in mapping.keys() if c != '_global_mean']

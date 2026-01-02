@@ -39,3 +39,16 @@ def train_and_save_model(model_name, train_df, data_file):
         joblib.dump(model, model_path)
         print(f"模型已保存至: {model_path}")
         
+    elif model_name == 'SVM':
+        model = get_model(model_name)
+        pipeline = Pipeline([
+            ('scaler', StandardScaler()),
+            ('classifier', model)
+        ])
+        print(f"正在训练模型: {model_name+'_'+data_file}...")
+        pipeline.fit(X, y)
+        train_acc = pipeline.score(X, y)
+        print(f"训练集准确率 (Training Accuracy): {train_acc:.4f}")
+        model_path = f'results/{model_name+'_'+data_file}.pkl'
+        joblib.dump(pipeline, model_path)
+        print(f"模型已保存至: {model_path}")

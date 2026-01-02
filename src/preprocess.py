@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-_GLOBAL_MAPPING = None
 
 def preprocess_pdays(df):
     """
@@ -67,8 +66,10 @@ def XG_preprocess(df, mapping=None):
             df[col] = df[col].map(mapping[col])
             df[col].fillna(mapping['_global_mean'])
 
-    for col in df.select_dtypes('object'):
-        df[col] = pd.factorize(df[col])[0]
+    return df
+
+def SVM_preprocess(df, mapping=None):
+    df = XG_preprocess(df, mapping)
     return df
 
 def preprocess_for_model(df, model_name, mapping=None):
@@ -76,6 +77,8 @@ def preprocess_for_model(df, model_name, mapping=None):
         return Lg_preprocess(df)
     elif model_name == 'XG':
         return XG_preprocess(df, mapping)
+    elif model_name == 'SVM':
+        return SVM_preprocess(df, mapping)
     else:
         raise ValueError(f"Unknown model name: {model_name}")
 

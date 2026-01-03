@@ -55,11 +55,12 @@ def basic_preprocess(df):
     return df
 
 def Lg_preprocess(df,):
+    df = df.copy()
     df['duration'] = np.log1p(df['duration'])
     return df
 
 def XG_preprocess(df, mapping=None):
-
+    df = df.copy()
     if mapping is not None:
         target_cols = [c for c in mapping.keys() if c != '_global_mean']
         for col in target_cols:

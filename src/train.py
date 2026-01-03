@@ -1,4 +1,4 @@
-from src import get_model
+from model_configs import get_model
 import pandas as pd
 import joblib
 from sklearn.pipeline import Pipeline

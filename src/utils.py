@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from src.preprocess import  preprocess_for_model
 import seaborn as sns
+plt.rcParams.update({'font.size': 18})
 
 def load_trained_model(model_name):
     # 假设你的模型保存在 'results/' 或 'models/' 目录下

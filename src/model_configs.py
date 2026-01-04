@@ -9,7 +9,6 @@ def get_model(model_name):
     if model_name == "logistic_baseline":
         return LogisticRegression( max_iter=1000)
     elif model_name == "XG":
-   
         return XGBClassifier(
             n_estimators=2000,
             learning_rate=0.004,

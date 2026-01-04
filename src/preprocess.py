@@ -81,7 +81,7 @@ def preprocess_for_model(df, model_name, mapping=None):
     if model_name == 'logistic_baseline':
         return Lg_preprocess(df)
     elif model_name == 'XG':
-        return XG_preprocess(df, mapping)
+        return Lg_preprocess(df)
     elif model_name == 'SVM':
         return Lg_preprocess(df)
     else:

@@ -100,17 +100,12 @@ def visualize_lr_weights(pipeline):
 
 def visualize_xgb_importance_direct(model, feature_names, top_n=15):
     """
-    专门用于直接训练（非Pipeline）的 XGBoost 可视化
-    :param model: 训练好的 XGBClassifier 对象
-    :param feature_names: 训练数据 X 的列名 (X.columns)
+    可视化 XGBoost 的最强 15 个和最弱 15 个特征
     """
-    # 1. 获取重要性得分 (使用 gain 能够最真实反映特征对预测的贡献)
-    # 对于直接训练的 XGBClassifier，通过 get_booster() 获取底层分数
+    # 1. 获取重要性得分
     importance_scores = model.get_booster().get_score(importance_type='gain')
     
     # 2. 映射特征名称
-    # XGBoost 在直接 fit numpy/dataframe 时，内部特征名可能是 f0, f1...
-    # 我们需要根据索引把它们换回原来的列名
     feat_importances = []
     for i, name in enumerate(feature_names):
         # 尝试匹配 f+index 或者原始名称
@@ -119,17 +114,31 @@ def visualize_xgb_importance_direct(model, feature_names, top_n=15):
             score = importance_scores[name]
         feat_importances.append({'Feature': name, 'Importance': score})
     
-    # 3. 排序并取 Top N
-    importance_df = pd.DataFrame(feat_importances)
-    importance_df = importance_df.sort_values(by='Importance', ascending=False).head(top_n)
+    full_df = pd.DataFrame(feat_importances).sort_values(by='Importance', ascending=False)
 
-    # 4. 绘图
-    plt.figure(figsize=(10, 6))
-    sns.barplot(data=importance_df, x='Importance', y='Feature', hue='Feature', palette='magma', legend=False)
-    
-    plt.title(f'XGBoost Feature Importance (Top {top_n} by Gain)', fontsize=14)
-    plt.xlabel('Average Gain', fontsize=12)
-    plt.ylabel('Features', fontsize=12)
-    plt.grid(axis='x', linestyle=':', alpha=0.7)
+    # 3. 提取两极特征
+    top_df = full_df.head(top_n)
+    # 如果总特征数不足 top_n，则取全部；否则取末尾 n 个
+    bottom_df = full_df.tail(top_n).sort_values(by='Importance', ascending=True)
+
+    # 4. 创建画布 (1行2列)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+
+    # 左侧图：Top 15
+    sns.barplot(data=top_df, x='Importance', y='Feature', hue='Feature', 
+                palette='magma', legend=False, ax=ax1)
+    ax1.set_title(f'Top {top_n} Strongest Features (Gain)', fontsize=14)
+    ax1.set_xlabel('Average Gain')
+
+    # 右侧图：Bottom 15
+    sns.barplot(data=bottom_df, x='Importance', y='Feature', hue='Feature', 
+                palette='viridis', legend=False, ax=ax2)
+    ax2.set_title(f'Bottom {top_n} Weakest Features (Gain)', fontsize=14)
+    ax2.set_xlabel('Average Gain')
+
     plt.tight_layout()
     plt.show()
+
+    # 返回那些贡献度为 0 的特征列表，方便你直接删除
+    zero_importance = full_df[full_df['Importance'] == 0]['Feature'].tolist()
+    return zero_importance

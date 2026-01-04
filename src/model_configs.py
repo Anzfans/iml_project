@@ -12,8 +12,8 @@ def get_model(model_name):
    
         return XGBClassifier(
             n_estimators=2000,
-            learning_rate=0.005,
-            max_depth=7,
+            learning_rate=0.004,
+            max_depth=6,
             eval_metric='logloss',
             subsample=0.8,
             colsample_bytree=0.6,
@@ -27,4 +27,3 @@ def get_model(model_name):
             probability=True,   # 必须开启，方便后续做模型融合
 # 自动处理类别不平衡，让模型更重视那少数的成功案例
             random_state=42)
-    

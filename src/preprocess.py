@@ -54,8 +54,12 @@ def basic_preprocess(df):
 
     return df
 
-def Lg_preprocess(df,):
+def Lg_preprocess(df):
     df = df.copy()
+    # 逻辑回归专用预处理
+    # 对object类型的列进行One-Hot编码
+    obj_cols = df.select_dtypes(include=['object']).columns
+    df = pd.get_dummies(df, columns=obj_cols, drop_first=True)
     df['duration'] = np.log1p(df['duration'])
     return df
 
@@ -79,7 +83,7 @@ def preprocess_for_model(df, model_name, mapping=None):
     elif model_name == 'XG':
         return XG_preprocess(df, mapping)
     elif model_name == 'SVM':
-        return SVM_preprocess(df, mapping)
+        return Lg_preprocess(df)
     else:
         raise ValueError(f"Unknown model name: {model_name}")
 

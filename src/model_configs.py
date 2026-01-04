@@ -20,8 +20,8 @@ def get_model(model_name):
         )
     elif model_name == "SVM":
         return SVC(kernel='rbf',# 必须使用核函数处理非线性
-            cache_size=2000,    # 增加缓存，提升训练速度              
-            C=10,             # 增加惩罚系数。默认是1.0。
+            cache_size=4000,    # 增加缓存，提升训练速度              
+            C=0.8,             # 增加惩罚系数。默认是1.0。
                                 # C越大，模型越会为了那剩下几个百分点的正确率去“死磕”
             gamma='scale',      # 自动决定核函数的辐射范围
             probability=True,   # 必须开启，方便后续做模型融合

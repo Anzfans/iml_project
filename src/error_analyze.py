@@ -9,7 +9,7 @@ from preprocess import preprocess_for_model
 
 
 
-def analyze_xgboost_errors():
+def analyze_errors(model_name, file_name):
     # 1. 模拟数据加载
     data_path = 'data/raw/train.csv'
     if not os.path.exists(data_path):
@@ -33,24 +33,24 @@ def analyze_xgboost_errors():
     cat_cols = ['job', 'marital', 'education', 'default', 'housing', 'loan', 'contact', 'month', 'poutcome', 'day_of_week']
     mapping = get_target_mapping(train_base, cat_cols)
     
-    df_train_processed = preprocess_for_model(train_base, 'XG', mapping)
+    df_train_processed = preprocess_for_model(train_base, model_name, mapping)
     
     # 【双重保险】：强制转换标签类型并剔除可能存在的残留 NaN
     df_train_processed = df_train_processed.dropna(subset=['target'])
     df_train_processed['target'] = df_train_processed['target'].astype(int)
         
     # 训练并保存
-    train_and_save_model('XG', df_train_processed, 'train_processed.csv')
+    train_and_save_model(model_name, df_train_processed, file_name)
 
     # 5. 处理验证集
-    df_val_processed = preprocess_for_model(val_base, 'XG', mapping)
+    df_val_processed = preprocess_for_model(val_base, model_name, mapping)
 
     # 统一使用处理后的 target 列，不要直接用 val_raw['subscribe']，防止类型不匹配
     X_val = df_val_processed.drop('target', axis=1)
     y_val = df_val_processed['target'].astype(int).values
 
     # 6. 加载模型
-    model_path = 'results/XG_train_processed.csv.pkl'
+    model_path = 'results/'+model_name+'_'+file_name + '.pkl'
     if not os.path.exists(model_path):
         print(f"找不到模型文件: {model_path}")
         return
@@ -80,13 +80,14 @@ def analyze_xgboost_errors():
         print("部分错误案例预览:")
         print(errors[['job', 'education', 'duration', 'true_label', 'predicted']].head())
         
-        errors.to_csv('results/xgboost_error_analysis.csv', index=False)
+        errors.to_csv('results/'+model_name+'_error_analysis.csv', index=False)
         print("错误案例已保存至 results/xgboost_error_analysis.csv")
     else:
         print("没有错误案例，模型表现完美！")
 
 if __name__ == '__main__':
-    analyze_xgboost_errors()    
+    analyze_errors('XG','cross_validation')    
+    analyze_errors('SVM','cross_validation')    
     
 
    

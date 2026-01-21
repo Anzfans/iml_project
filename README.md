@@ -30,12 +30,23 @@ uv sync
 
 
 ## 2. 运行项目
-只需运行 main.py，程序将自动完成任务：
+运行项目main.py, 相关命令如下
 
 ```Bash
-uv run main.py
+uv run main.py train --model<model_name> --save_id<id>
 ```
 
+```Bash
+uv run main.py predict --model_file<file_name> --out<file_name>
+```
+
+```Bash
+uv run main.py kfold --model<model_name> --splits<n>
+```
+
+```Bash
+uv run main.py compare --m1<model_name_1> --m2<model_name_2>
+```
 
 
 

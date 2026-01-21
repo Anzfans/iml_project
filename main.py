@@ -7,7 +7,7 @@ from src.preprocess import preprocess_for_model, get_target_mapping, basic_prepr
 from src.predict import predict_and_save
 from src.utils import ensemble_predict, load_trained_model
 from src.KfoldTraininer import execute_pipeline, parse_args as parse_kfold_args
-from src.paired_ttest import paired_ttest, get_results
+from src.ModelEvaluator import paired_ttest, get_results
 
 def main():
     parser = argparse.ArgumentParser()

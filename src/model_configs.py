@@ -1,9 +1,7 @@
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from sklearn.svm import SVC
-from sklearn.ensemble import VotingClassifier
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+
 
 def get_model(model_name):
     if model_name == "logistic":

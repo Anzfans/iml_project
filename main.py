@@ -1,86 +1,34 @@
-import pandas as pd 
 import argparse
-import os
-import itertools  # 用于生成两两对比的组合
-from src.train import train_and_save_model  
-from src.preprocess import preprocess_for_model, get_target_mapping, basic_preprocess
-from src.predict import predict_and_save
-from src.utils import ensemble_predict, load_trained_model
-from src.KfoldTraininer import execute_pipeline, parse_args as parse_kfold_args
-from src.ModelEvaluator import paired_ttest, get_results
+import pandas as pd
+from src.ModelTrainer import ModelTrainer
+from src.ModelPredictor import ModelPredictor
+from src.preprocess import basic_preprocess
 
 def main():
-    parser = argparse.ArgumentParser()
-    # 默认执行这三个模型
-    parser.add_argument('--models', type=str, default='logistic,xgboost,svm', 
-                        help='Comma-separated list of models to train')
-    parser.add_argument('--file_name', type=str, default='submission.csv')
-    parser.add_argument('--balance', action='store_true', default=True, help='Use balance in Kfold')
-    
+    parser = argparse.ArgumentParser(description="Bank Marketing Pipeline")
+    subparsers = parser.add_subparsers(dest="mode", help="运行模式: train 或 predict")
+
+    # 训练模式子命令
+    train_p = subparsers.add_parser("train")
+    train_p.add_argument("--model", type=str, required=True, choices=['xgboost', 'svm', 'logistic'])
+    train_p.add_argument("--save_id", type=str, default="best_model")
+
+    # 预测模式子命令
+    pred_p = subparsers.add_parser("predict")
+    pred_p.add_argument("--model_file", type=str, required=True, help="模型文件名(不带.pkl)")
+    pred_p.add_argument("--out", type=str, default="submission")
+
     args = parser.parse_args()
 
-    # --- 第一步：通用数据准备 ---
-    print("\n[1/4] Preparing Data...")
-    df_train_raw = pd.read_csv('data/raw/train.csv')
-    df_test_raw = pd.read_csv('data/raw/test.csv')
-    df_train_basic = basic_preprocess(df_train_raw)
-    df_test_basic = basic_preprocess(df_test_raw)
-    
-    target_enc_cols = ['job', 'marital', 'education', 'default', 'housing', 'loan', 'contact', 'month', 'poutcome', 'day_of_week']
-    mapping = get_target_mapping(df_train_basic, target_enc_cols)
+    # 统一数据加载与基础处理
+    if args.mode:
+        data_path = 'data/raw/train.csv' if args.mode == 'train' else 'data/raw/test.csv'
+        df = basic_preprocess(pd.read_csv(data_path))
 
-    # --- 第二步：循环训练与预测 (单模型产出) ---
-    print("\n[2/4] Training & Predicting Individual Models...")
-    model_list = [m.strip() for m in args.models.split(',')]
+        if args.mode == "train":
+            ModelTrainer(output_dir='results').train_and_save(args.model, df, args.save_id)
+        elif args.mode == "predict":
+            ModelPredictor(args.model_file).predict(df, args.out)
 
-    for model_name in model_list:
-        model_name = model_name.strip()
-        print(f"--- Processing: {model_name} ---")
-        
-        # 预处理...
-        df_train_processed = preprocess_for_model(df_train_basic, model_name, mapping)
-        df_test_processed = preprocess_for_model(df_test_basic, model_name, mapping)
-
-        # 重点：构造一个包含模型名称的文件标识符
-        # 这样 save_id 就会是 'logistic_baseline' 或 'xgboost'
-        save_id = f"{model_name}" 
-
-        # 训练
-        train_and_save_model(model_name, df_train_processed, save_id)
-
-        # 预测
-        # 注意：这里我们修改传递给 predict_and_save 的参数
-        predict_and_save(model_name, df_test_processed, save_id)
-
-    # --- 第三步：执行 K-Fold (保存评估分数) ---
-    print("\n[3/4] Running K-Fold Cross Validation for all models...")
-    # 这里 '--model all' 会根据你的 Kfold.py 逻辑依次评估模型
-    kfold_args = parse_kfold_args(['--model', 'all', '--balance' if args.balance else '', '--save']) 
-    execute_pipeline(kfold_args)
-
-    # --- 第四步：执行 Paired T-Test (直接 Load 第三步的结果) ---
-    print("\n[4/4] Running Paired T-Tests (Loading CV results)...")
-    
-    # 自动生成两两对比组合，例如: (logistic, xgboost), (xgboost, svm) 等
-    comparisons = list(itertools.combinations(model_list, 2))
-    
-    for m1, m2 in comparisons:
-        print(f"\nComparing {m1} vs {m2}:")
-        # 核心：load_saved=True 确保直接读取刚刚 Kfold 保存的文件
-        res1 = get_results(m1, args.balance, load_saved=True, folds=5, seed=42)
-        res2 = get_results(m2, args.balance, load_saved=True, folds=5, seed=42)
-
-        if res1 and res2:
-            for metric in ['accuracy', 'recall']:
-                paired_ttest(
-                    res1['fold_metrics'][metric], 
-                    res2['fold_metrics'][metric], 
-                    m1.upper(), 
-                    m2.upper(), 
-                    metric
-                )
-        else:
-            print(f"Skipping {m1} vs {m2} due to missing result files.")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

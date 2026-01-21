@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 
 def preprocess_pdays(df):
     """
@@ -52,37 +51,10 @@ def basic_preprocess(df):
     if 'id' in df.columns:
         df.drop('id', axis=1, inplace=True)
 
-    return df
-
-def Lg_preprocess(df):
-    df = df.copy()
-    # 逻辑回归专用预处理
-    # 对object类型的列进行One-Hot编码
     obj_cols = df.select_dtypes(include=['object']).columns
-    df = pd.get_dummies(df, columns=obj_cols, drop_first=True)
+    df = pd.get_dummies(df, columns=obj_cols.to_list(), drop_first=True)
     df['duration'] = np.log1p(df['duration'])
+    
     return df
 
-def XG_preprocess(df, mapping=None):
-    df = df.copy()
-    if mapping is not None:
-        target_cols = [c for c in mapping.keys() if c != '_global_mean']
-        for col in target_cols:
-            df[col] = df[col].map(mapping[col])
-            df[col].fillna(mapping['_global_mean'])
 
-    return df
-
-def SVM_preprocess(df, mapping=None):
-    df = XG_preprocess(df, mapping)
-    return df
-
-def preprocess_for_model(df, model_name, mapping=None):
-    if model_name == 'logistic':
-        return Lg_preprocess(df)
-    elif model_name == 'xgboost':
-        return XG_preprocess(df, mapping)
-    elif model_name == 'svm':
-        return SVM_preprocess(df, mapping)
-    else:
-        raise ValueError(f"Unknown model name: {model_name}")

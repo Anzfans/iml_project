@@ -30,4 +30,3 @@ def predict_and_save(model_name, test_data, file_name):
     submission_path = f'results/{model_name+'_'+file_name}_submission.csv'
     submission_df.to_csv(submission_path, index=False)
     print(f"预测结果已保存至: {submission_path}")    
-    

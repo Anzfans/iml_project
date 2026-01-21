@@ -12,7 +12,7 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.Kfold import run_stratified_kfold_cv, get_result_filename, load_results
+from src.KfoldTraininer import run_stratified_kfold_cv, get_result_filename, load_results
 
 
 def paired_ttest(scores1, scores2, name1, name2, metric, alpha=0.05):

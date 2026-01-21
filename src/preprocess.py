@@ -78,31 +78,11 @@ def SVM_preprocess(df, mapping=None):
     return df
 
 def preprocess_for_model(df, model_name, mapping=None):
-    if model_name == 'logistic_baseline':
+    if model_name == 'logistic':
         return Lg_preprocess(df)
-    elif model_name == 'XG':
-        return Lg_preprocess(df)
-    elif model_name == 'SVM':
-        return Lg_preprocess(df)
+    elif model_name == 'xgboost':
+        return XG_preprocess(df, mapping)
+    elif model_name == 'svm':
+        return SVM_preprocess(df, mapping)
     else:
         raise ValueError(f"Unknown model name: {model_name}")
-
-
-def get_target_mapping(train_df, cols):
-    """从训练集中学习平滑后的目标映射"""
-    mapping = {}
-    global_mean = train_df['target'].mean()
-    m = 50  # 平滑系数
-    
-    for col in cols:
-        stats = train_df.groupby(col)['target'].agg(['count', 'mean'])
-        # 平滑公式
-        smooth = (stats['count'] * stats['mean'] + m * global_mean) / (stats['count'] + m)
-        mapping[col] = smooth.to_dict()
-        
-    mapping['_global_mean'] = global_mean
-    return mapping
-
-# 使用示例:
-# train_df = pd.read_csv('train.csv')
-# train_df = preprocess_pdays(train_df)

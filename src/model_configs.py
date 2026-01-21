@@ -6,9 +6,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 def get_model(model_name):
-    if model_name == "logistic_baseline":
+    if model_name == "logistic":
         return LogisticRegression( max_iter=1000)
-    elif model_name == "XG":
+    elif model_name == "xgboost":
         return XGBClassifier(
             n_estimators=2000,
             learning_rate=0.004,
@@ -17,7 +17,7 @@ def get_model(model_name):
             subsample=0.8,
             colsample_bytree=0.6,
         )
-    elif model_name == "SVM":
+    elif model_name == "svm":
         return SVC(kernel='rbf',# 必须使用核函数处理非线性
             cache_size=4000,    # 增加缓存，提升训练速度              
             C=0.8,             # 增加惩罚系数。默认是1.0。

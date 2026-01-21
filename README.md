@@ -28,33 +28,15 @@
 uv sync
 ```
 
-## 2. 数据准备
-获取数据：访问 天池大赛官网 https://tianchi.aliyun.com/competition/entrance/531993/information 下载数据集。
 
-放置路径：在项目根目录下手动创建文件夹，并将数据放入：
-
-- **路径**：data/raw/train.csv
-
-- **路径**：data/raw/test.csv
-
-注意：data/ 文件夹已被设置为不推送到 Git，保护本地数据安全。
-
-## 3. 运行项目
+## 2. 运行项目
 只需运行 main.py，程序将自动完成任务：
 
 ```Bash
 uv run main.py
 ```
 
-## 4. 命令行参数
-选择训练的模型，设置处理后数据的文件名
-```Bash
-uv run main.py --model_name <model_name> --file_name <file_name>
-```
 
-```Bash
-uv run main.py --help
-```
 
 
 ## 添加新依赖

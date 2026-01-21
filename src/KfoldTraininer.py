@@ -6,20 +6,20 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, recall_score, confusion_matrix, classification_report
 
 class KFoldTrainer:
-    def __init__(self, model_factory, config):
+    def __init__(self, model_factory, nsplits):
         """
         :param model_factory: 一个函数，根据名称返回模型对象 (来自你的 model_configs)
         :param config: 全局配置字典 (来自 yaml)
         """
         self.model_factory = model_factory
-        self.config = config
+        self.nsplits = nsplits
         self.results = {}
 
-    def run(self, X, y, model_name, class_balance=True):
+    def run(self, X, y, model_name):
         print(f"\n{'='*20} 正在开始 {model_name} 的 K-Fold 验证 {'='*20}")
         
-        n_splits = self.config.get('n_splits', 5)
-        skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=self.config.get('seed', 42))
+        n_splits = self.nsplits
+        skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
         
         metrics = {'accuracy': [], 'recall': [], 'time': []}
         all_y_real = []
@@ -37,13 +37,13 @@ class KFoldTrainer:
             y_train, y_val = y_values[train_idx], y_values[val_idx]
 
             # 2. 预处理 (在 Fold 内部进行，防止数据泄露)
-            if self.config.get('use_scaler', True):
-                scaler = StandardScaler()
-                X_train = scaler.fit_transform(X_train)
-                X_val = scaler.transform(X_val)
+
+            scaler = StandardScaler()
+            X_train = scaler.fit_transform(X_train)
+            X_val = scaler.transform(X_val)
 
             # 3. 获取并训练模型
-            model = self.model_factory(model_name, class_balance)
+            model = self.model_factory(model_name)
             model.fit(X_train, y_train)
 
             # 4. 预测与评估
